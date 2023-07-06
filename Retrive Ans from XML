@@ -1,0 +1,38 @@
+import xml.etree.ElementTree as ET
+import nltk
+from nltk.tokenize import word_tokenize
+from nltk.corpus import stopwords
+
+# Step 1: Parse the XML file
+tree = ET.parse('your_xml_file.xml')
+root = tree.getroot()
+
+# Step 2: Extract relevant information and create a dictionary of questions and answers
+qa_dict = {}
+for element in root.findall('qa_pair'):
+    question = element.find('question').text.lower()
+    answer = element.find('answer').text
+    qa_dict[question] = answer
+
+# Step 3: Define a function to process user input and retrieve answers
+def get_answer(question):
+    # Tokenize and preprocess user input
+    tokens = word_tokenize(question.lower())
+    stop_words = set(stopwords.words('english'))
+    filtered_tokens = [token for token in tokens if token not in stop_words]
+    
+    # Find matching question in the QA dictionary
+    for q in qa_dict:
+        if all(token in q for token in filtered_tokens):
+            return qa_dict[q]
+    
+    return "Sorry, I don't have an answer for that question."
+
+# Step 4: Handle user queries
+while True:
+    user_input = input("Ask a question (or 'q' to quit): ")
+    if user_input == 'q':
+        break
+    
+    answer = get_answer(user_input)
+    print(answer)
